@@ -1,0 +1,81 @@
+# 개발 환경 설정
+spring:
+  # MariaDB 설정
+  datasource:
+    url: jdbc:mariadb://localhost:3306/portfolio
+    username: root
+    password: 1234
+    driver-class-name: org.mariadb.jdbc.Driver
+    
+  # JPA 설정
+  jpa:
+    hibernate:
+      ddl-auto: update  # 테이블 자동 생성/업데이트
+    show-sql: true      # SQL 쿼리 로그 출력
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MariaDBDialect
+        format_sql: true
+  
+  # Jackson 날짜 파싱 설정 (토스페이먼츠 API 대응)
+  jackson:
+    deserialization:
+      adjust-dates-to-context-time-zone: false
+    serialization:
+      write-dates-as-timestamps: false
+  
+  # OAuth2 설정
+  security:
+    oauth2:
+      client:
+        registration:
+          # 카카오 OAuth2 (활성화)
+          kakao:
+            client-id: "642d4cce7a6c3794007a54fbbca38191"        # REST API 키
+            client-secret: "UKOxrLlqbxRxIbb5ngEoaKq7EyVCp9Hu"   # Client Secret
+            authorization-grant-type: authorization_code
+            redirect-uri: "http://localhost:8080/login/oauth2/code/kakao"
+            scope:
+              - profile_nickname
+              - account_email
+              - profile_image
+            client-name: kakao
+            client-authentication-method: client_secret_post
+            
+        provider:
+          # 카카오 Provider 설정 (활성화)
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-uri: https://kapi.kakao.com/v2/user/me
+            user-name-attribute: id
+
+# 토스페이먼츠 설정
+tosspayments:
+  # API 개별 연동 키 (결제창 방식)
+  client-key: "test_ck_PBal2vxj811Z2MO1awQR85RQgOAN"
+  secret-key: "test_sk_ex6BJGQOVDWLaz0G9pYQ3W4w2zNb"
+  # API 엔드포인트
+  api:
+    base-url: "https://api.tosspayments.com"
+    confirm-url: "/v1/payments/confirm"
+    payment-url: "/v1/payments"
+  # 성공/실패 URL (프로젝트 구조에 맞게 수정)
+  success-url: "http://localhost:8080/project/payment/success"
+  fail-url: "http://localhost:8080/project/payment/fail"
+
+server:
+  port: 8080
+
+# 개발 환경 로깅 (상세)
+logging:
+  level:
+    org.springframework.data.jpa: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    com.portfolio.portfolio_website: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.security.oauth2: TRACE
+    org.springframework.security.oauth2.client: TRACE
+    # PaymentController 로그 추가
+    com.portfolio.portfolio_website.payment: DEBUG

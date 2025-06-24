@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관리자 대시보드 - Portfolio</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- 네비바 -->
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <div class="container-fluid mt-4">
+        <div class="row">
+            <!-- 사이드바 -->
+            <div class="col-md-3 col-lg-2">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h6 class="mb-0">
+                            <i class="fas fa-user-shield"></i> 관리자 메뉴
+                        </h6>
+                    </div>
+                    <div class="card-body p-0">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item active">
+                                <a href="/admin/dashboard" class="text-decoration-none">
+                                    <i class="fas fa-tachometer-alt"></i> 대시보드
+                                </a>
+                            </li>
+                            <li class="list-group-item">
+                                <a href="/project/payment/admin/add" class="text-decoration-none">
+                                    <i class="fas fa-plus-circle"></i> 상품 등록
+                                </a>
+                            </li>
+                            <li class="list-group-item">
+                                <a href="/project/payment" class="text-decoration-none">
+                                    <i class="fas fa-shopping-cart"></i> 상품 관리
+                                </a>
+                            </li>
+                            <li class="list-group-item">
+                                <a href="/admin/list" class="text-decoration-none">
+                                    <i class="fas fa-users-cog"></i> 관리자 목록
+                                </a>
+                            </li>
+                            <li class="list-group-item">
+                                <a href="/board/study/write" class="text-decoration-none">
+                                    <i class="fas fa-edit"></i> 학습 게시글 작성
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 메인 콘텐츠 -->
+            <div class="col-md-9 col-lg-10">
+                <!-- 환영 메시지 -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card bg-primary text-white">
+                            <div class="card-body">
+                                <h4>
+                                    <i class="fas fa-user-shield"></i> 
+                                    관리자 대시보드에 오신 것을 환영합니다!
+                                </h4>
+                                <p class="mb-0">
+                                    안녕하세요, <strong th:text="${admin.name}">관리자</strong>님! 
+                                    (<span th:text="${admin.email}">admin@example.com</span>)
+                                </p>
+                                <small>
+                                    마지막 로그인: 
+                                    <span th:text="${admin.lastLoginAt != null ? #temporals.format(admin.lastLoginAt, 'yyyy-MM-dd HH:mm') : '처음 로그인'}">
+                                        2025-01-01 12:00
+                                    </span>
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 통계 카드들 -->
+                <div class="row mb-4">
+                    <div class="col-md-3 mb-3">
+                        <div class="card text-center border-primary">
+                            <div class="card-body">
+                                <i class="fas fa-shopping-cart fa-2x text-primary mb-2"></i>
+                                <h5>상품 관리</h5>
+                                <p class="text-muted">등록된 상품들을 관리하세요</p>
+                                <a href="/project/payment" class="btn btn-primary btn-sm">
+                                    상품 목록 보기
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3 mb-3">
+                        <div class="card text-center border-success">
+                            <div class="card-body">
+                                <i class="fas fa-plus-circle fa-2x text-success mb-2"></i>
+                                <h5>상품 등록</h5>
+                                <p class="text-muted">새로운 상품을 등록하세요</p>
+                                <a href="/project/payment/admin/add" class="btn btn-success btn-sm">
+                                    상품 등록하기
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3 mb-3">
+                        <div class="card text-center border-warning">
+                            <div class="card-body">
+                                <i class="fas fa-book fa-2x text-warning mb-2"></i>
+                                <h5>학습 게시판</h5>
+                                <p class="text-muted">학습 컨텐츠를 작성하세요</p>
+                                <a href="/board/study" class="btn btn-warning btn-sm">
+                                    게시판 관리
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3 mb-3">
+                        <div class="card text-center border-info">
+                            <div class="card-body">
+                                <i class="fas fa-users-cog fa-2x text-info mb-2"></i>
+                                <h5>관리자 목록</h5>
+                                <p class="text-muted">총 <span th:text="${totalAdmins}">1</span>명</p>
+                                <a href="/admin/list" class="btn btn-info btn-sm">
+                                    목록 보기
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 최근 활동 -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="fas fa-clock"></i> 최근 활동</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="list-group">
+                                    <div class="list-group-item">
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <h6 class="mb-1">관리자 계정 로그인</h6>
+                                            <small>방금 전</small>
+                                        </div>
+                                        <p class="mb-1">관리자 대시보드에 성공적으로 로그인했습니다.</p>
+                                    </div>
+                                    <div class="list-group-item">
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <h6 class="mb-1">관리자 권한 확인</h6>
+                                            <small>방금 전</small>
+                                        </div>
+                                        <p class="mb-1">ROLE_ADMIN 권한이 정상적으로 부여되었습니다.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 빠른 작업 -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="fas fa-lightning-bolt"></i> 빠른 작업</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-2">
+                                        <a href="/project/payment/admin/add" class="btn btn-outline-primary w-100">
+                                            <i class="fas fa-plus"></i> 새 상품 등록
+                                        </a>
+                                    </div>
+                                    <div class="col-md-6 mb-2">
+                                        <a href="/board/study/write" class="btn btn-outline-success w-100">
+                                            <i class="fas fa-pencil-alt"></i> 학습 게시글 작성
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <style>
+        .list-group-item a {
+            color: inherit;
+        }
+        .list-group-item.active a {
+            color: white;
+        }
+        .list-group-item:hover {
+            background-color: #f8f9fa;
+        }
+        .list-group-item.active:hover {
+            background-color: #0d6efd;
+        }
+    </style>
+</body>
+</html>

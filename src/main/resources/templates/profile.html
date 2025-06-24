@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>프로필 - Portfolio Website</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-code"></i> Portfolio
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/logout">
+                    <i class="fas fa-sign-out-alt"></i> 로그아웃
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow">
+                    <div class="card-body p-5">
+                        <h2 class="text-center mb-4">
+                            <i class="fas fa-user-circle"></i> 사용자 프로필
+                        </h2>
+
+                        <!-- DB 사용자 정보 -->
+                        <div th:if="${user}" class="mb-4">
+                            <h4>DB 저장된 정보</h4>
+                            <div class="row">
+                                <div class="col-md-4 text-center">
+                                    <img th:src="${user.profileImage}" 
+                                         th:alt="${user.name}" 
+                                         class="rounded-circle mb-3"
+                                         style="width: 100px; height: 100px; object-fit: cover;">
+                                </div>
+                                <div class="col-md-8">
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <th>이름:</th>
+                                            <td th:text="${user.name}">이름</td>
+                                        </tr>
+                                        <tr>
+                                            <th>이메일:</th>
+                                            <td th:text="${user.email}">이메일</td>
+                                        </tr>
+                                        <tr>
+                                            <th>제공자:</th>
+                                            <td th:text="${user.provider}">제공자</td>
+                                        </tr>
+                                        <tr>
+                                            <th>가입일:</th>
+                                            <td th:text="${#temporals.format(user.createdAt, 'yyyy-MM-dd HH:mm')}">가입일</td>
+                                        </tr>
+                                        <tr>
+                                            <th>최근 로그인:</th>
+                                            <td th:text="${#temporals.format(user.lastLoginAt, 'yyyy-MM-dd HH:mm')}">최근 로그인</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- OAuth2 원본 정보 (디버깅용) -->
+                        <div th:if="${oauth2User}" class="mt-4">
+                            <h5>카카오 원본 정보 (디버깅용)</h5>
+                            <div class="alert alert-info">
+                                <pre th:text="${oauth2User}">OAuth2 사용자 정보</pre>
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-4">
+                            <a href="/" class="btn btn-primary">
+                                <i class="fas fa-home"></i> 메인으로 돌아가기
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

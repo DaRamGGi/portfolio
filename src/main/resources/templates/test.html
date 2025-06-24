@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Page</title>
+</head>
+<body>
+    <h1>링크 테스트</h1>
+    
+    <!-- 매우 간단한 링크들 -->
+    <p><a href="/">메인으로 가기</a></p>
+    <p><a href="/oauth2/authorization/kakao">카카오 로그인</a></p>
+    <p><a href="https://www.google.com">구글로 가기 (외부 링크)</a></p>
+    
+    <script>
+        console.log("JavaScript 작동 확인");
+        
+        // 링크 클릭 이벤트 확인
+        document.addEventListener('click', function(e) {
+            console.log('클릭됨:', e.target);
+        });
+    </script>
+</body>
+</html>

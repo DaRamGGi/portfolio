@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>결제하기 - Portfolio</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- 네비게이션 바 -->
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+    
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h4><i class="fas fa-credit-card me-2"></i>결제하기</h4>
+                    </div>
+                    <div class="card-body">
+                        <!-- 상품 정보 -->
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <img th:src="${product.sPhoto}" 
+                                     th:alt="${product.sTitle}" 
+                                     class="img-fluid rounded">
+                            </div>
+                            <div class="col-md-8">
+                                <h5 th:text="${product.sTitle}">상품명</h5>
+                                <p class="text-muted" th:text="${product.sContent}">상품 설명</p>
+                                
+                                <!-- 가격 정보 -->
+                                <div class="price-info">
+                                    <div th:if="${product.sDiscount > 0}">
+                                        <span class="text-decoration-line-through text-muted">
+                                            <span th:text="${#numbers.formatCurrency(product.sPrice)}">정가</span>
+                                        </span>
+                                        <span class="badge bg-danger ms-2" 
+                                              th:text="${product.sDiscount + '%'} + ' 할인'">할인율</span>
+                                    </div>
+                                    <div class="h4 text-primary mb-0">
+                                        <span th:text="${#numbers.formatCurrency(finalPrice)}">최종가격</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <hr>
+                        
+                        <!-- 주문자 정보 -->
+                        <div class="mb-4">
+                            <h6>주문자 정보</h6>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="customerName" class="form-label">주문자명</label>
+                                    <input type="text" class="form-control" id="customerName" 
+                                           th:value="${customerName}" placeholder="주문자명을 입력하세요">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="customerEmail" class="form-label">이메일</label>
+                                    <input type="email" class="form-control" id="customerEmail" 
+                                           th:value="${customerEmail}" placeholder="이메일을 입력하세요">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="customerPhone" class="form-label">휴대폰번호</label>
+                                    <input type="tel" class="form-control" id="customerPhone" 
+                                           placeholder="01012345678">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <hr>
+                        
+                        <!-- 결제 정보 요약 -->
+                        <div class="mb-4">
+                            <h6>결제 정보</h6>
+                            <div class="bg-light p-3 rounded">
+                                <div class="d-flex justify-content-between">
+                                    <span>상품 금액</span>
+                                    <span th:text="${#numbers.formatCurrency(product.sPrice)}">상품금액</span>
+                                </div>
+                                <div class="d-flex justify-content-between" th:if="${product.sDiscount > 0}">
+                                    <span class="text-danger">할인 금액</span>
+                                    <span class="text-danger">
+                                        -<span th:text="${#numbers.formatCurrency(product.sPrice.subtract(finalPrice))}">할인금액</span>
+                                    </span>
+                                </div>
+                                <hr>
+                                <div class="d-flex justify-content-between h5">
+                                    <strong>총 결제 금액</strong>
+                                    <strong class="text-primary" th:text="${#numbers.formatCurrency(finalPrice)}">최종금액</strong>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 결제 수단 선택 -->
+                        <div class="mb-4">
+                            <h6>결제 수단 선택</h6>
+                            <div class="payment-methods">
+                                <div class="row">
+                                    <div class="col-md-6 mb-2">
+                                        <button type="button" class="btn btn-outline-primary w-100 payment-method-btn" data-method="카드">
+                                            <i class="fas fa-credit-card me-2"></i>신용/체크카드
+                                        </button>
+                                    </div>
+                                    <div class="col-md-6 mb-2">
+                                        <button type="button" class="btn btn-outline-primary w-100 payment-method-btn" data-method="가상계좌">
+                                            <i class="fas fa-university me-2"></i>가상계좌
+                                        </button>
+                                    </div>
+                                    <div class="col-md-6 mb-2">
+                                        <button type="button" class="btn btn-outline-primary w-100 payment-method-btn" data-method="계좌이체">
+                                            <i class="fas fa-exchange-alt me-2"></i>실시간 계좌이체
+                                        </button>
+                                    </div>
+                                    <div class="col-md-6 mb-2">
+                                        <button type="button" class="btn btn-outline-primary w-100 payment-method-btn" data-method="휴대폰">
+                                            <i class="fas fa-mobile-alt me-2"></i>휴대폰 결제
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-2">
+                                <small class="text-muted">선택된 결제 수단: <span id="selected-method">카드</span></small>
+                            </div>
+                        </div>
+                        
+                        <!-- 결제하기 버튼 -->
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-primary btn-lg" id="payment-button">
+                                <i class="fas fa-credit-card me-2"></i>
+                                <span th:text="${#numbers.formatCurrency(finalPrice)} + ' 결제하기'">결제하기</span>
+                            </button>
+                            <a th:href="@{/project/payment/{sNo}(sNo=${product.sNo})}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>상품으로 돌아가기
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 토스페이먼츠 결제창 SDK (v1) -->
+    <script src="https://js.tosspayments.com/v1/payment"></script>
+    
+    <script th:inline="javascript">
+        // 서버에서 전달받은 데이터
+        const clientKey = /*[[${clientKey}]]*/ 'test_ck_';
+        const orderId = /*[[${orderId}]]*/ 'ORDER_';
+        const amount = /*[[${finalPrice}]]*/ 0;
+        const successUrl = /*[[${successUrl}]]*/ '';
+        const failUrl = /*[[${failUrl}]]*/ '';
+        const productName = /*[[${product.sTitle}]]*/ '';
+        
+        // 토스페이먼츠 결제 객체 생성
+        const tossPayments = TossPayments(clientKey);
+        
+        // 선택된 결제 수단
+        let selectedPaymentMethod = '카드';
+        
+        // 결제 수단 선택 이벤트
+        document.querySelectorAll('.payment-method-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                // 모든 버튼 비활성화
+                document.querySelectorAll('.payment-method-btn').forEach(b => {
+                    b.classList.remove('btn-primary');
+                    b.classList.add('btn-outline-primary');
+                });
+                
+                // 선택된 버튼 활성화
+                this.classList.remove('btn-outline-primary');
+                this.classList.add('btn-primary');
+                
+                // 선택된 결제 수단 저장
+                selectedPaymentMethod = this.dataset.method;
+                document.getElementById('selected-method').textContent = selectedPaymentMethod;
+            });
+        });
+        
+        // 결제하기 버튼 이벤트
+        document.getElementById('payment-button').addEventListener('click', function() {
+            const customerName = document.getElementById('customerName').value.trim();
+            const customerEmail = document.getElementById('customerEmail').value.trim();
+            const customerPhone = document.getElementById('customerPhone').value.trim();
+            
+            // 입력 검증
+            if (!customerName) {
+                alert('주문자명을 입력해주세요.');
+                document.getElementById('customerName').focus();
+                return;
+            }
+            
+            if (!customerEmail) {
+                alert('이메일을 입력해주세요.');
+                document.getElementById('customerEmail').focus();
+                return;
+            }
+            
+            if (!customerPhone) {
+                alert('휴대폰번호를 입력해주세요.');
+                document.getElementById('customerPhone').focus();
+                return;
+            }
+            
+            // 결제 요청
+            tossPayments.requestPayment(selectedPaymentMethod, {
+                // 결제 정보
+                amount: amount,
+                orderId: orderId,
+                orderName: productName,
+                
+                // 구매자 정보
+                customerName: customerName,
+                customerEmail: customerEmail,
+                customerMobilePhone: customerPhone,
+                
+                // 결과 처리 URL
+                successUrl: successUrl,
+                failUrl: failUrl,
+            })
+            .catch(function (error) {
+                if (error.code === 'USER_CANCEL') {
+                    console.log('사용자가 결제를 취소했습니다.');
+                } else {
+                    console.error('결제 요청 실패:', error);
+                    alert('결제 요청에 실패했습니다: ' + error.message);
+                }
+            });
+        });
+        
+        // 페이지 로드 시 기본 결제 수단 선택
+        document.querySelector('[data-method="카드"]').click();
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <style>
+        .payment-method-btn {
+            padding: 15px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        
+        .payment-method-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,123,255,0.3);
+        }
+        
+        .payment-method-btn.btn-primary {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+        }
+        
+        .price-info {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+        }
+    </style>
+</body>
+</html>

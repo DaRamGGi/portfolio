@@ -1,0 +1,10 @@
+# 공통 설정
+spring:
+  application:
+    name: portfolio-website
+
+---
+# 기본 프로필 설정
+spring:
+  profiles:
+    active: dev

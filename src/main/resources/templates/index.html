@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Website</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-code"></i> Portfolio
+            </a>
+            
+            <!-- 토글 버튼 (모바일) -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <!-- 메인 메뉴 -->
+                <ul class="navbar-nav me-auto">
+                    <!-- 포트폴리오 드롭다운 -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-briefcase"></i> 포트폴리오
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/portfolio/idesign">
+                                <i class="fas fa-palette"></i> IDesign
+                            </a></li>
+                        </ul>
+                    </li>
+                    
+                    <!-- 학습 내용 드롭다운 -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-graduation-cap"></i> 학습 내용
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/learning/tech">
+                                <i class="fas fa-cog"></i> 기술
+                            </a></li>
+                            <li><a class="dropdown-item" href="/learning/coding-test">
+                                <i class="fas fa-code"></i> 코딩테스트
+                            </a></li>
+                        </ul>
+                    </li>
+                    
+                    <!-- 프로젝트 실습 드롭다운 -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-project-diagram"></i> 프로젝트 실습
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/project/payment">
+                                <i class="fas fa-credit-card"></i> 결제 시스템
+                            </a></li>
+                            <li><a class="dropdown-item" href="/project/redis">
+                                <i class="fas fa-database"></i> Redis
+                            </a></li>
+                            <li><a class="dropdown-item" href="/project/security">
+                                <i class="fas fa-shield-alt"></i> 보안
+                            </a></li>
+                            <li><a class="dropdown-item" href="/project/api">
+                                <i class="fas fa-plug"></i> API 설계
+                            </a></li>
+                            <li><a class="dropdown-item" href="/project/deploy">
+                                <i class="fas fa-cloud"></i> 배포 전략
+                            </a></li>
+                        </ul>
+                    </li>
+                    
+                    <!-- 게시판 드롭다운 -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-comments"></i> 게시판
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/board/improvement">
+                                <i class="fas fa-lightbulb"></i> 개선 게시판
+                            </a></li>
+                            <li><a class="dropdown-item" href="/board/question">
+                                <i class="fas fa-question-circle"></i> 질문 게시판
+                            </a></li>
+                            <li><a class="dropdown-item" href="/board/study">
+                                <i class="fas fa-book"></i> 학습 게시판
+                            </a></li>
+                        </ul>
+                    </li>
+                </ul>
+                
+                <!-- 로그인/사용자 메뉴 -->
+                <ul class="navbar-nav">
+                    <div sec:authorize="isAuthenticated()">
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-user"></i> <span sec:authentication="name">사용자</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="/profile">
+                                    <i class="fas fa-user-circle"></i> 프로필
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="/logout">
+                                    <i class="fas fa-sign-out-alt"></i> 로그아웃
+                                </a></li>
+                            </ul>
+                        </li>
+                    </div>
+                    <div sec:authorize="!isAuthenticated()">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/login">
+                                <i class="fas fa-sign-in-alt"></i> 로그인
+                            </a>
+                        </li>
+                    </div>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mt-5">
+        <!-- Hero Section -->
+        <div class="jumbotron bg-primary text-white rounded p-5 mb-5">
+            <div class="container text-center">
+                <h1 class="display-4">개발자 포트폴리오</h1>
+                <p class="lead">기술 스택 중심의 인터랙티브 포트폴리오 웹사이트</p>
+                <hr class="my-4 bg-white">
+                <p>Spring Boot + MongoDB + OAuth2로 구축된 현대적인 웹 애플리케이션</p>
+            </div>
+        </div>
+
+        <!-- Tech Stack Section -->
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 tech-card">
+                    <div class="card-body text-center">
+                        <i class="fab fa-java fa-3x text-warning mb-3"></i>
+                        <h5 class="card-title">Backend</h5>
+                        <p class="card-text">Java 17, Spring Boot 3.x, Spring Security</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 tech-card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-database fa-3x text-success mb-3"></i>
+                        <h5 class="card-title">Database</h5>
+                        <p class="card-text">MongoDB, NoSQL Document 기반</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 tech-card">
+                    <div class="card-body text-center">
+                        <i class="fab fa-html5 fa-3x text-danger mb-3"></i>
+                        <h5 class="card-title">Frontend</h5>
+                        <p class="card-text">Thymeleaf, Bootstrap 5, JavaScript</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features Section -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <h2 class="text-center mb-4">주요 기능</h2>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-users text-primary"></i> 사용자 관리
+                        </h5>
+                        <p class="card-text">OAuth2 기반 간편 로그인 (Google, GitHub)</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-comments text-success"></i> 게시판 시스템
+                        </h5>
+                        <p class="card-text">개선사항, 질문, 학습 게시판</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-dark text-white mt-5 py-4">
+        <div class="container text-center">
+            <p>&copy; 2025 Portfolio Website. Built with Spring Boot & MongoDB</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <style>
+        /* 기존 스타일 */
+        .tech-card {
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+        .tech-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .jumbotron {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+        }
+        
+        /* 네비바 드롭다운 스타일링 */
+        .navbar-nav .dropdown-menu {
+            border: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            padding: 0.5rem 0;
+            margin-top: 0.5rem;
+        }
+        
+        .navbar-nav .dropdown-item {
+            padding: 0.7rem 1.5rem;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+        
+        .navbar-nav .dropdown-item:hover {
+            background-color: #f8f9fa;
+            border-left: 3px solid #007bff;
+            padding-left: 1.7rem;
+        }
+        
+        .navbar-nav .dropdown-item i {
+            width: 20px;
+            margin-right: 10px;
+            color: #6c757d;
+        }
+        
+        .navbar-nav .dropdown-item:hover i {
+            color: #007bff;
+        }
+        
+        /* 네비바 링크 호버 효과 */
+        .navbar-nav .nav-link {
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .navbar-nav .nav-link:hover {
+            color: #007bff !important;
+        }
+        
+        .navbar-nav .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background-color: #007bff;
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+        
+        .navbar-nav .nav-link:hover::after {
+            width: 80%;
+        }
+        
+        /* 드롭다운 메뉴 애니메이션 */
+        .dropdown-menu {
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            display: block !important;
+            visibility: hidden;
+        }
+        
+        .dropdown:hover .dropdown-menu {
+            opacity: 1;
+            transform: translateY(0);
+            visibility: visible;
+        }
+        
+        /* 모바일 반응형 */
+        @media (max-width: 991px) {
+            .navbar-nav .nav-link::after {
+                display: none;
+            }
+            
+            .dropdown-menu {
+                opacity: 1;
+                transform: none;
+                visibility: visible;
+                position: static;
+                box-shadow: none;
+                background-color: #495057;
+                margin: 0;
+                border-radius: 0;
+            }
+            
+            .navbar-nav .dropdown-item {
+                color: #fff;
+                border-left: none;
+            }
+            
+            .navbar-nav .dropdown-item:hover {
+                background-color: #007bff;
+                border-left: none;
+                padding-left: 1.5rem;
+            }
+        }
+    </style>
+</body>
+</html>

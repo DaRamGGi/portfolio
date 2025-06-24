@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${product.sTitle} + ' - 결제 시스템'">상품 상세</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- 네비바 -->
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <div class="container mt-4">
+        <!-- 뒤로가기 버튼 -->
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="/project/payment">
+                        <i class="fas fa-arrow-left"></i> 상품 목록
+                    </a>
+                </li>
+                <li class="breadcrumb-item active" th:text="${product.sTitle}">상품명</li>
+            </ol>
+        </nav>
+
+        <div class="row">
+            <!-- 상품 이미지 -->
+            <div class="col-md-6">
+                <div class="card">
+                    <img th:src="${product.sPhoto}" th:alt="${product.sTitle}" 
+                         class="card-img-top product-image" style="height: 400px; object-fit: cover;">
+                    
+                    <!-- 할인 배지 -->
+                    <div th:if="${product.hasDiscount()}" class="position-absolute top-0 end-0 m-3">
+                        <span class="badge bg-danger fs-6">
+                            <i class="fas fa-fire"></i> <span th:text="${product.sDiscount}"></span>% OFF
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 상품 정보 -->
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h2 class="card-title mb-3" th:text="${product.sTitle}">상품명</h2>
+                        
+                        <!-- 가격 정보 -->
+                        <div class="price-section mb-4">
+                            <div th:if="${product.hasDiscount()}" class="mb-2">
+                                <span class="text-decoration-line-through text-muted fs-5">
+                                    정가: <span th:text="${#numbers.formatDecimal(product.sPrice, 0, 'COMMA', 0, 'POINT')}"></span>원
+                                </span>
+                            </div>
+                            <div class="current-price">
+                                <span class="fw-bold fs-3" th:classappend="${product.hasDiscount()} ? 'text-danger' : 'text-primary'">
+                                    <span th:text="${#numbers.formatDecimal(product.discountedPrice, 0, 'COMMA', 0, 'POINT')}"></span>원
+                                </span>
+                                <span th:if="${product.hasDiscount()}" class="text-muted ms-2">
+                                    (<span th:text="${#numbers.formatDecimal(product.sPrice.subtract(product.discountedPrice), 0, 'COMMA', 0, 'POINT')}"></span>원 할인)
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- 상품 설명 -->
+                        <div class="product-description mb-4">
+                            <h5>상품 설명</h5>
+                            <div class="border rounded p-3 bg-light">
+                                <p th:text="${product.sContent}" class="mb-0" style="white-space: pre-line;">상품 설명이 여기에 표시됩니다.</p>
+                            </div>
+                        </div>
+
+                        <!-- 구매 버튼 -->
+                        <div class="purchase-section">
+                            <div class="d-grid gap-2">
+                                <button type="button" class="btn btn-primary btn-lg" onclick="purchaseProduct()">
+                                    <i class="fas fa-shopping-cart"></i> 구매하기
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary">
+                                    <i class="fas fa-heart"></i> 관심상품 추가
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 상품 정보 -->
+                        <div class="product-info mt-4">
+                            <small class="text-muted">
+                                <i class="fas fa-calendar"></i> 등록일: 
+                                <span th:text="${#temporals.format(product.createdAt, 'yyyy-MM-dd HH:mm')}"></span>
+                            </small>
+                            <br>
+                            <small class="text-muted" th:if="${product.updatedAt != null}">
+                                <i class="fas fa-edit"></i> 수정일: 
+                                <span th:text="${#temporals.format(product.updatedAt, 'yyyy-MM-dd HH:mm')}"></span>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 관리자 기능 -->
+        <div sec:authorize="hasRole('ADMIN')" class="mt-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-cog"></i> 관리자 기능</h5>
+                </div>
+                <div class="card-body">
+                    <div class="btn-group" role="group">
+                        <a th:href="@{/project/payment/admin/edit/{sNo}(sNo=${product.sNo})}" 
+                           class="btn btn-warning">
+                            <i class="fas fa-edit"></i> 수정
+                        </a>
+                        <button type="button" class="btn btn-danger" onclick="deleteProduct()">
+                            <i class="fas fa-trash"></i> 삭제
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 관련 상품 추천 (나중에 구현) -->
+        <div class="mt-5">
+            <h4>이런 상품은 어떠세요?</h4>
+            <div class="text-center py-4 text-muted">
+                <i class="fas fa-box fa-2x mb-2"></i>
+                <p>관련 상품 추천 기능은 곧 추가될 예정입니다.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 구매 확인 모달 -->
+    <div class="modal fade" id="purchaseModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">구매 확인</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center">
+                        <img th:src="${product.sPhoto}" th:alt="${product.sTitle}" 
+                             class="img-thumbnail mb-3" style="width: 100px; height: 100px; object-fit: cover;">
+                        <h6 th:text="${product.sTitle}">상품명</h6>
+                        <p class="fs-5 fw-bold text-primary">
+                            <span th:text="${#numbers.formatDecimal(product.discountedPrice, 0, 'COMMA', 0, 'POINT')}"></span>원
+                        </p>
+                        <p class="text-muted">위 상품을 구매하시겠습니까?</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                    <button type="button" class="btn btn-primary" onclick="goToPayment()">
+                        <i class="fas fa-credit-card"></i> 결제하기
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 삭제 확인 모달 -->
+    <div sec:authorize="hasRole('ADMIN')" class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-danger">상품 삭제</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center">
+                        <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                        <h6>정말로 이 상품을 삭제하시겠습니까?</h6>
+                        <p class="text-muted">삭제된 상품은 복구할 수 없습니다.</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                    <form th:action="@{/project/payment/admin/delete/{sNo}(sNo=${product.sNo})}" method="post" style="display: inline;">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash"></i> 삭제
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // 구매하기 버튼 클릭
+        function purchaseProduct() {
+            const modal = new bootstrap.Modal(document.getElementById('purchaseModal'));
+            modal.show();
+        }
+        
+        // 결제 페이지로 이동
+        function goToPayment() {
+            // 나중에 결제 페이지 URL로 변경
+            window.location.href = '/project/payment/checkout/' + /*[[${product.sNo}]]*/ '1';
+        }
+        
+        // 상품 삭제
+        function deleteProduct() {
+            const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            modal.show();
+        }
+    </script>
+    
+    <style>
+        .product-image {
+            transition: transform 0.3s ease;
+        }
+        .product-image:hover {
+            transform: scale(1.02);
+        }
+        
+        .price-section {
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            background: linear-gradient(45deg, #f8f9fa, #ffffff);
+        }
+        
+        .purchase-section .btn {
+            border-radius: 10px;
+            padding: 15px;
+            font-weight: bold;
+        }
+        
+        .product-description {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+        }
+    </style>
+</body>
+</html>
