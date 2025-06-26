@@ -115,6 +115,10 @@ public class PaymentController {
             session.setAttribute("tempProductId", sNo);
             session.setAttribute("tempAmount", finalPrice);
             
+            // ⭐ 추가: phone 정보도 세션에 저장할 수 있도록 준비
+            session.setAttribute("tempCustomerName", userName != null ? userName : "");
+            session.setAttribute("tempCustomerEmail", userEmail != null ? userEmail : "");
+            
             model.addAttribute("product", product);
             model.addAttribute("finalPrice", finalPrice);
             model.addAttribute("orderId", orderId);
@@ -287,10 +291,14 @@ public class PaymentController {
                 log.warn("⚠️ 세션에 이메일이 없어 기본값 사용: '{}'", customerEmail);
             }
             
+            // ⭐ 추가: 세션에서 customerPhone 가져오기
+            String customerPhone = (String) session.getAttribute("tempCustomerPhone");
+            
             log.info("🎯 결제에 사용될 최종 정보:");
             log.info("  - userId: {}", userId);
             log.info("  - customerName: '{}'", customerName);
             log.info("  - customerEmail: '{}'", customerEmail);
+            log.info("  - customerPhone: '{}'", customerPhone); // 추가
             
             Long productId = (Long) session.getAttribute("tempProductId");
             ShopEntity product = shopRepository.findById(productId).orElse(null);
@@ -298,14 +306,17 @@ public class PaymentController {
             
             log.info("🛒 주문 생성 및 결제 승인 시작");
             
-            // 🔧 수정: 주문 생성과 결제 승인을 하나의 메서드로 처리
+            // 🔧 수정: 주문 생성과 결제 승인을 하나의 메서드로 처리 (phone 추가)
             PaymentResponseDto paymentResponse = tossPaymentsService.createOrderAndConfirmPayment(
-                    paymentKey, orderId, amount, customerName, customerEmail, orderName, userId);
+                    paymentKey, orderId, amount, customerName, customerEmail, customerPhone, orderName, userId);
             
             // 세션 정리
             session.removeAttribute("tempOrderId");
             session.removeAttribute("tempProductId");
             session.removeAttribute("tempAmount");
+            session.removeAttribute("tempCustomerName");
+            session.removeAttribute("tempCustomerEmail");
+            session.removeAttribute("tempCustomerPhone"); // ⭐ 추가
             
             // 주문 정보 다시 조회 (결제 승인 후)
             OrderEntity order = tossPaymentsService.getOrder(orderId);
@@ -339,6 +350,9 @@ public class PaymentController {
         session.removeAttribute("tempOrderId");
         session.removeAttribute("tempProductId");
         session.removeAttribute("tempAmount");
+        session.removeAttribute("tempCustomerName");
+        session.removeAttribute("tempCustomerEmail");
+        session.removeAttribute("tempCustomerPhone"); // ⭐ 추가
         
         model.addAttribute("errorCode", code);
         model.addAttribute("errorMessage", message);
@@ -460,6 +474,35 @@ public class PaymentController {
         // TODO: 관리자 결제 관리 로직 구현
         
         return "payment/admin";
+    }
+    
+    /**
+     * 고객 정보 세션 저장 API (결제 전 호출)
+     */
+    @PostMapping("/save-customer-info")
+    @ResponseBody
+    public Map<String, String> saveCustomerInfo(@RequestBody Map<String, String> customerInfo, HttpSession session) {
+        log.info("📝 고객 정보 세션 저장: {}", customerInfo);
+        
+        try {
+            String customerName = customerInfo.get("customerName");
+            String customerEmail = customerInfo.get("customerEmail");
+            String customerPhone = customerInfo.get("customerPhone");
+            
+            // 세션에 고객 정보 저장
+            session.setAttribute("tempCustomerName", customerName);
+            session.setAttribute("tempCustomerEmail", customerEmail);
+            session.setAttribute("tempCustomerPhone", customerPhone);
+            
+            log.info("✅ 고객 정보 세션 저장 완료: name={}, email={}, phone={}", 
+                    customerName, customerEmail, customerPhone);
+            
+            return Map.of("status", "success", "message", "고객 정보 저장 완료");
+            
+        } catch (Exception e) {
+            log.error("❌ 고객 정보 세션 저장 실패: {}", e.getMessage());
+            return Map.of("status", "error", "message", "고객 정보 저장 실패");
+        }
     }
     
     /**

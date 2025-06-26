@@ -50,7 +50,7 @@ public class TossPaymentsService {
      */
     @Transactional
     public PaymentResponseDto createOrderAndConfirmPayment(String paymentKey, String orderId, BigDecimal amount,
-                                                          String customerName, String customerEmail, String orderName, Long userId) {
+                                                          String customerName, String customerEmail, String customerPhone, String orderName, Long userId) {
         log.info("🔔 주문 생성 및 결제 승인 시작: orderId={}, amount={}", orderId, amount);
         
         try {
@@ -87,6 +87,7 @@ public class TossPaymentsService {
             order.setUserId(userId);
             order.setCustomerName(customerName);
             order.setCustomerEmail(customerEmail);
+            order.setCustomerPhone(customerPhone); // ⭐ 수정: 실제 phone 데이터 사용
             order.setOrderName(orderName);
             order.setTotalAmount(amount);
             order.setOrderStatus(OrderEntity.OrderStatus.PAID); // 바로 PAID 상태로
@@ -219,6 +220,9 @@ public class TossPaymentsService {
         payment.setPaymentStatus(PaymentEntity.PaymentStatus.valueOf(response.getStatus()));
         payment.setPaymentMethod(response.getMethod());
         
+        // ⭐ 추가: paymentMethodType 설정
+        payment.setPaymentMethodType(extractPaymentMethodType(response));
+        
         // 날짜 파싱 문제 해결: String으로 받은 후 파싱
         try {
             if (response.getApprovedAt() != null) {
@@ -235,7 +239,8 @@ public class TossPaymentsService {
         }
         
         paymentRepository.save(payment);
-        log.info("✅ 결제 정보 저장 완료: paymentKey={}", response.getPaymentKey());
+        log.info("✅ 결제 정보 저장 완료: paymentKey={}, method={}, methodType={}", 
+                response.getPaymentKey(), response.getMethod(), payment.getPaymentMethodType());
     }
     
     /**
@@ -251,6 +256,102 @@ public class TossPaymentsService {
         payment.setFailureReason(e.getResponseBodyAsString());
         
         paymentRepository.save(payment);
+    }
+    
+    /**
+     * 결제 수단 타입 추출
+     */
+    private String extractPaymentMethodType(PaymentResponseDto response) {
+        String method = response.getMethod();
+        String methodType = method; // 기본값
+        
+        try {
+            switch (method) {
+                case "카드":
+                    if (response.getCard() != null) {
+                        methodType = response.getCard().getCardType() != null ? 
+                            response.getCard().getCardType() : "일반카드";
+                        
+                        // 할부 정보 추가
+                        if (response.getCard().getInstallmentPlanMonths() != null && 
+                            response.getCard().getInstallmentPlanMonths() > 0) {
+                            methodType += " (" + response.getCard().getInstallmentPlanMonths() + "개월)";
+                        }
+                    }
+                    break;
+                    
+                case "가상계좌":
+                    if (response.getVirtualAccount() != null) {
+                        methodType = response.getVirtualAccount().getBankCode() != null ? 
+                            getBankName(response.getVirtualAccount().getBankCode()) + " 가상계좌" : "가상계좌";
+                    }
+                    break;
+                    
+                case "계좌이체":
+                    if (response.getTransfer() != null) {
+                        methodType = response.getTransfer().getBankCode() != null ? 
+                            getBankName(response.getTransfer().getBankCode()) + " 계좌이체" : "실시간 계좌이체";
+                    }
+                    break;
+                    
+                case "휴대폰":
+                    methodType = "휴대폰 결제";
+                    break;
+                    
+                case "간편결제":
+                    if (response.getEasyPay() != null) {
+                        methodType = response.getEasyPay().getProvider() != null ? 
+                            response.getEasyPay().getProvider() + " 간편결제" : "간편결제";
+                    }
+                    break;
+                    
+                case "상품권":
+                    methodType = "상품권 결제";
+                    break;
+                    
+                default:
+                    methodType = method;
+                    break;
+            }
+            
+        } catch (Exception e) {
+            log.warn("⚠️ 결제 수단 타입 추출 실패, 기본값 사용: method={}, error={}", method, e.getMessage());
+            methodType = method;
+        }
+        
+        log.info("🔍 결제 수단 타입 추출: method={} → methodType={}", method, methodType);
+        return methodType;
+    }
+    
+    /**
+     * 은행 코드를 은행명으로 변환
+     */
+    private String getBankName(String bankCode) {
+        switch (bankCode) {
+            case "39": return "경남은행";
+            case "34": return "광주은행";
+            case "04": return "국민은행";
+            case "11": return "농협은행";
+            case "31": return "대구은행";
+            case "32": return "부산은행";
+            case "02": return "산업은행";
+            case "45": return "새마을금고";
+            case "07": return "수협은행";
+            case "88": return "신한은행";
+            case "48": return "신협";
+            case "27": return "씨티은행";
+            case "20": return "우리은행";
+            case "71": return "우체국";
+            case "81": return "하나은행";
+            case "54": return "HSBC";
+            case "03": return "기업은행";
+            case "06": return "국민은행";
+            case "05": return "외환은행";
+            case "90": return "카카오뱅크";
+            case "89": return "케이뱅크";
+            case "92": return "토스뱅크";
+            default: return bankCode;
+        }
     }
     
     /**

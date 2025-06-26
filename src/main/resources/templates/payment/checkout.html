@@ -204,21 +204,39 @@
                 return;
             }
             
-            // 결제 요청
-            tossPayments.requestPayment(selectedPaymentMethod, {
-                // 결제 정보
-                amount: amount,
-                orderId: orderId,
-                orderName: productName,
+            // ⭐ 추가: 세션에 phone 정보 저장
+            fetch('/project/payment/save-customer-info', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    customerName: customerName,
+                    customerEmail: customerEmail,
+                    customerPhone: customerPhone
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('고객 정보 저장 실패');
+                }
                 
-                // 구매자 정보
-                customerName: customerName,
-                customerEmail: customerEmail,
-                customerMobilePhone: customerPhone,
-                
-                // 결과 처리 URL
-                successUrl: successUrl,
-                failUrl: failUrl,
+                // 결제 요청
+                return tossPayments.requestPayment(selectedPaymentMethod, {
+                    // 결제 정보
+                    amount: amount,
+                    orderId: orderId,
+                    orderName: productName,
+                    
+                    // 구매자 정보
+                    customerName: customerName,
+                    customerEmail: customerEmail,
+                    customerMobilePhone: customerPhone,
+                    
+                    // 결과 처리 URL
+                    successUrl: successUrl,
+                    failUrl: failUrl,
+                });
             })
             .catch(function (error) {
                 if (error.code === 'USER_CANCEL') {
